@@ -116,16 +116,17 @@ func (u *PayoutsProcessor) process() {
 		log.Println("Error while retrieving payees from backend:", err)
 		return
 	}
-	var host, port, username, password, urlHost string // To be retrieved from config.json file
+	var host, username, password, urlHost string // To be retrieved from config.json file
+	var port int
 	d := gomail.NewPlainDialer(host, port, username, password)
 	for _, login := range payees {
 		mustPay++
 		client := u.backend.Client()
 		m := gomail.NewMessage()
 		m.SetHeader("From", "blockchain@etherum.com")
-		m.SetHeader("To", client.HGet(login, "email"))
+		m.SetHeader("To", client.HGet(login, "email").Val())
 		m.SetHeader("Subject", "Retrieve your payments NOW!")
-		m.SetBody("Dear User \n	Retrieve your etherum payment now by clicking this link \n " + urlHost + "/" + login + "/payment:1")
+		m.SetBody("text/html", "Dear User \n	Retrieve your etherum payment now by clicking this link \n "+urlHost+"/"+login+"/payment:1")
 		if err = d.DialAndSend(m); err != nil {
 			log.Println("Error whilesending mail:", err)
 		}
@@ -143,7 +144,7 @@ func (u *PayoutsProcessor) process() {
 	}
 }
 
-func ReleasePayment(login string) {
+func (u *PayoutsProcessor) ReleasePayment(login string) {
 	amount, _ := u.backend.GetBalance(login)
 	amountInShannon := big.NewInt(amount)
 

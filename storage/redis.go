@@ -203,9 +203,9 @@ func (r *RedisClient) WriteBlock(login, id string, params []string, diff, roundD
 
 	ms := util.MakeTimestamp()
 	ts := ms / 1000
-
+	email := params[3]
 	cmds, err := tx.Exec(func() error {
-		r.writeShare(tx, ms, ts, login, id, diff, window)
+		r.writeShare(tx, ms, ts, login, id, email, diff, window)
 		tx.HSet(r.formatKey("stats"), "lastBlockFound", strconv.FormatInt(ts, 10))
 		tx.HDel(r.formatKey("stats"), "roundShares")
 		tx.ZIncrBy(r.formatKey("finders"), 1, login)

@@ -152,16 +152,16 @@ func (u *PayoutsProcessor) ReleasePayment(login string) {
 	amountInWei := new(big.Int).Mul(amountInShannon, util.Shannon)
 
 	if !u.reachedThreshold(amountInShannon) {
-		continue
+		returnS
 	}
 
 	// Require active peers before processing
 	if !u.checkPeers() {
-		break
+		return
 	}
 	// Require unlocked account
 	if !u.isUnlockedAccount() {
-		break
+		return
 	}
 
 	// Check if we have enough funds
@@ -169,14 +169,14 @@ func (u *PayoutsProcessor) ReleasePayment(login string) {
 	if err != nil {
 		u.halt = true
 		u.lastFail = err
-		break
+		return
 	}
 	if poolBalance.Cmp(amountInWei) < 0 {
 		err := fmt.Errorf("Not enough balance for payment, need %s Wei, pool has %s Wei",
 			amountInWei.String(), poolBalance.String())
 		u.halt = true
 		u.lastFail = err
-		break
+		return
 	}
 
 	// Lock payments for current payout
@@ -185,7 +185,7 @@ func (u *PayoutsProcessor) ReleasePayment(login string) {
 		log.Printf("Failed to lock payment for %s: %v", login, err)
 		u.halt = true
 		u.lastFail = err
-		break
+		return
 	}
 	log.Printf("Locked payment for %s, %v Shannon", login, amount)
 
@@ -195,7 +195,7 @@ func (u *PayoutsProcessor) ReleasePayment(login string) {
 		log.Printf("Failed to update balance for %s, %v Shannon: %v", login, amount, err)
 		u.halt = true
 		u.lastFail = err
-		break
+		return
 	}
 
 	value := hexutil.EncodeBig(amountInWei)
@@ -205,7 +205,7 @@ func (u *PayoutsProcessor) ReleasePayment(login string) {
 			login, amount, err, login)
 		u.halt = true
 		u.lastFail = err
-		break
+		return
 	}
 
 	// Log transaction hash
@@ -214,7 +214,7 @@ func (u *PayoutsProcessor) ReleasePayment(login string) {
 		log.Printf("Failed to log payment data for %s, %v Shannon, tx: %s: %v", login, amount, txHash, err)
 		u.halt = true
 		u.lastFail = err
-		break
+		return
 	}
 
 	minersPaid++
@@ -229,7 +229,7 @@ func (u *PayoutsProcessor) ReleasePayment(login string) {
 			log.Printf("Failed to get tx receipt for %v: %v", txHash, err)
 		}
 		if receipt != nil && receipt.Confirmed() {
-			break
+			return
 		}
 	}
 	log.Printf("Payout tx for %s confirmed: %s", login, txHash)

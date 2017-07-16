@@ -50,12 +50,12 @@ type PayoutsProcessor struct {
 	lastFail error
 }
 
-var u PayoutsProcessor
+var u *PayoutsProcessor
 
 func NewPayoutsProcessor(cfg *PayoutsConfig, backend *storage.RedisClient) *PayoutsProcessor {
 	p := &PayoutsProcessor{config: cfg, backend: backend}
 	p.rpc = rpc.NewRPCClient("PayoutsProcessor", cfg.Daemon, cfg.Timeout)
-	*u = p
+	*u = *p
 	return p
 }
 

@@ -50,7 +50,7 @@ type PayoutsProcessor struct {
 	lastFail error
 }
 
-var u *PayoutsProcessor
+var u PayoutsProcessor
 
 func NewPayoutsProcessor(cfg *PayoutsConfig, backend *storage.RedisClient) *PayoutsProcessor {
 	p := &PayoutsProcessor{config: cfg, backend: backend}

@@ -152,7 +152,7 @@ func (u *PayoutsProcessor) ReleasePayment(login string) {
 	amountInWei := new(big.Int).Mul(amountInShannon, util.Shannon)
 
 	if !u.reachedThreshold(amountInShannon) {
-		returnS
+		return
 	}
 
 	// Require active peers before processing
